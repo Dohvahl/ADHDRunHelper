@@ -153,6 +153,39 @@ penalty.**
 - **Downloads the whole route at run start** so navigation keeps working if the
   phone connection drops mid-run.
 
+### Screen flow (draft)
+
+Modeled to **mimic** native Garmin activity apps (Pool Swim especially). Every
+screen is our own code — nothing is inherited from the native apps; "like the
+native X" means "looks/behaves like it," not "reuses it."
+
+1. **Launch** from the watch's activity list (a Connect IQ device app appears
+   there alongside Run / Walk / Bike).
+2. **Distance select** — a preset list (e.g. 5k / 10k / half / full / Custom).
+   Custom → the circular touch input (0–9 around the ring, value in center,
+   backspace top-middle, accept bottom-middle, units toggle on the right).
+3. **Acquire GPS** — need at least a coarse fix *first*, because the route is
+   generated from the start position.
+4. **Calculate route** — cache hit = instant; cache miss = fetch from backend
+   (needs phone).
+5. **Ready screen** — mimics native, with a GPS/route status indicator:
+   - Route available → normal "Ready" (green).
+   - Cache miss + no phone, or route otherwise unavailable → user can **still
+     start**, but as a **plain run**: track time / HR / distance / pace, with
+     **no turn cues** (graceful degradation).
+   - Swipe up → settings: **units** (display only — **no recalc**), **run type**
+     loop/out-and-back (**recalc**). Changing distance also recalcs.
+6. **Running** — mimic native Run data pages (our build); swipe between
+   time / distance / pace / HR. Turn cue = single vibrate + screen-edge flash
+   (only when a route is loaded).
+7. **Buttons** — replicate native start/stop/lap. Guard the **Back** button so it
+   can't accidentally exit a live run.
+8. **End** → save; record a FIT running activity that syncs to Garmin Connect.
+
+**Design principle:** navigation is a *layer on top of a plain run recorder*. The
+base app records a run with data screens even with no route; turn-by-turn is an
+enhancement. Milestone 1 builds the recorder first, cues second.
+
 ---
 
 ## 8. Caching
@@ -211,6 +244,10 @@ penalty.**
 | 2026-07-10 | v1 route gen = crude waypoint generator on street graph (path b). |
 | 2026-07-10 | Overshoot-by-smallest-margin = "cooldown"; warmup/cooldown deferred. |
 | 2026-07-10 | Build order: watch spike → backend/generator → web → integrate → iterate. |
+| 2026-07-10 | GPS fix comes before route calc (route is generated from the start position). |
+| 2026-07-10 | Cache miss / no phone → user can still start a plain run (time/HR/distance/pace), no cues. Navigation is a layer over a plain run recorder. |
+| 2026-07-10 | Unit change = display only (no recalc); run type / distance change = recalc. |
+| 2026-07-10 | Watch app launches from the native activity list but re-implements all activity UI itself. |
 
 ---
 
