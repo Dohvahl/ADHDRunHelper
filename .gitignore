@@ -180,5 +180,11 @@ cython_debug/
 .cursorignore
 .cursorindexingignore
 
+scripts/
+
 # Garmin
 developer_key
+bin/
+watch/bin/
+*.prg
+*.prg.debug.xml
