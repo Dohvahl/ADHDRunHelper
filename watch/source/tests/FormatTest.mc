@@ -40,3 +40,34 @@ function testPace(logger as Test.Logger) as Boolean {
     Test.assertEqualMessage(Format.pace(1609.344 / 360.0, false), "6:00 /mi", "6:00 per mile");
     return true;
 }
+
+// --- Null tolerance ---------------------------------------------------------
+// Every Activity.Info field is null until its sensor reports. These pin down
+// what the data screen shows while we're still waiting for a fix / a reading.
+
+(:test)
+function testDurationNull(logger as Test.Logger) as Boolean {
+    Test.assertEqualMessage(Format.duration(null), "0:00", "timer not started");
+    return true;
+}
+
+(:test)
+function testDistanceNull(logger as Test.Logger) as Boolean {
+    Test.assertEqualMessage(Format.distance(null, true),  "0.00 km", "no distance yet, metric");
+    Test.assertEqualMessage(Format.distance(null, false), "0.00 mi", "no distance yet, statute");
+    return true;
+}
+
+(:test)
+function testPaceNull(logger as Test.Logger) as Boolean {
+    Test.assertEqualMessage(Format.pace(null, true),  "--:--", "no speed yet, metric");
+    Test.assertEqualMessage(Format.pace(null, false), "--:--", "no speed yet, statute");
+    return true;
+}
+
+(:test)
+function testHeartRate(logger as Test.Logger) as Boolean {
+    Test.assertEqualMessage(Format.heartRate(null), "--",  "sensor hasn't reported");
+    Test.assertEqualMessage(Format.heartRate(142),  "142", "live reading");
+    return true;
+}
