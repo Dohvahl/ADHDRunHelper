@@ -5,9 +5,8 @@ import Toybox.Position;
 import Toybox.ActivityRecording;
 import Toybox.Activity;
 
-// Step 3 (yours): own the GPS + FIT-recording lifecycle.
-//
-// The View (Step 4) reads live metrics straight from Activity.getActivityInfo(),
+
+// The View reads live metrics straight from Activity.getActivityInfo(),
 // so this class doesn't have to expose those. What it DOES own:
 //   - turning GPS on/off
 //   - creating / starting / stopping / saving the recording session
@@ -40,7 +39,7 @@ class RunRouterApp extends Application.AppBase {
         // TODO (optional for now)
     }
 
-    // --- Run control (called by the input delegate in Step 5) ---
+    // --- Run control (called by the input delegate) ---
 
     // Start recording if not already. Create the session once, sport = running.
     function startRun() as Void {
@@ -76,7 +75,6 @@ class RunRouterApp extends Application.AppBase {
     }
 
     // Used by the UI/input to know which controls to show.
-    //   return _session != null && _session.isRecording();
     function isRecording() as Boolean {
         return _session != null && _session.isRecording();
     }
