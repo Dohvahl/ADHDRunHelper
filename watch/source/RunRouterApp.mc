@@ -23,14 +23,13 @@ class RunRouterApp extends Application.AppBase {
     }
 
     function onStart(state as Dictionary?) as Void {
-        // TODO: turn GPS on so fixes start flowing and Activity.Info populates.
-        //   Position.enableLocationEvents(Position.LOCATION_CONTINUOUS, method(:onPosition));
-        // (Requires the Positioning permission — already in the manifest.)
+        // turn GPS on so fixes start flowing and Activity.Info populates.
+		Position.enableLocationEvents(Position.LOCATION_CONTINUOUS, method(:onPosition));
     }
 
     function onStop(state as Dictionary?) as Void {
-        // TODO: turn GPS back off to save battery when the app exits.
-        //   Position.enableLocationEvents(Position.LOCATION_DISABLE, method(:onPosition));
+        // turn GPS back off to save battery when the app exits.
+        Position.enableLocationEvents(Position.LOCATION_DISABLE, method(:onPosition));
     }
 
     // GPS fix callback. For the base recorder you can leave this essentially
@@ -44,30 +43,42 @@ class RunRouterApp extends Application.AppBase {
     // --- Run control (called by the input delegate in Step 5) ---
 
     // Start recording if not already. Create the session once, sport = running.
-    //   _session = ActivityRecording.createSession({ :name => "Run", :sport => Activity.SPORT_RUNNING });
-    //   _session.start();
-    // Note: sport enum is Activity.SPORT_RUNNING in current SDKs; if the compiler
-    // objects, the older spelling is ActivityRecording.SPORT_RUNNING.
     function startRun() as Void {
-        // TODO
+        if (!(Toybox has :ActivityRecording)) {
+			return;
+		}
+
+		if (_session == null) {
+			_session = ActivityRecording.createSession({ 
+				:name => "Run", 
+				:sport => Activity.SPORT_RUNNING 
+			});
+		}
+		if (!_session.isRecording()) {
+			_session.start();
+		}
     }
 
     // Stop (pause) recording but keep the session so it can still be saved.
-    //   _session.stop();
     function stopRun() as Void {
-        // TODO
+        if (_session != null && _session.isRecording()) {
+			_session.stop();
+		}
     }
 
     // Persist the recorded activity as a FIT (shows up in Garmin Connect / the
-    // sim's FIT output).  _session.save();  then clear _session.
+    // sim's FIT output) then clear the session.
     function saveRun() as Void {
-        // TODO
+        if (_session != null) {
+			_session.save();
+			_session = null;
+		}
     }
 
     // Used by the UI/input to know which controls to show.
     //   return _session != null && _session.isRecording();
     function isRecording() as Boolean {
-        return false; // TODO
+        return _session != null && _session.isRecording();
     }
 
     function getInitialView() as [Views] or [Views, InputDelegates] {
