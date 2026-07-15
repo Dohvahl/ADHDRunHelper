@@ -248,6 +248,7 @@ enhancement. Milestone 1 builds the recorder first, cues second.
 | 2026-07-10 | Cache miss / no phone → user can still start a plain run (time/HR/distance/pace), no cues. Navigation is a layer over a plain run recorder. |
 | 2026-07-10 | Unit change = display only (no recalc); run type / distance change = recalc. |
 | 2026-07-10 | Watch app launches from the native activity list but re-implements all activity UI itself. |
+| 2026-07-15 | Milestone 1 base recorder works in sim. Verified: recording an activity needs the **Fit** permission (plus **Positioning** for GPS); HR populates from `Activity.Info` with NO Sensor permission. Physical action button routes through `onKey` (KEY_ENTER), not `onSelect`, on the 4S. |
 
 ---
 
