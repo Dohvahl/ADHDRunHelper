@@ -71,8 +71,24 @@ class RunRouterApp extends Application.AppBase {
         if (_session != null) {
 			_session.save();
 			_session = null;
+			System.println("Run saved!");
 		}
     }
+
+	// Discard the recorded activity and clear the session.
+	function discardRun() as Void {
+		if (_session != null) {
+			_session.discard();
+			_session = null;
+			System.println("Run discarded!");
+		}
+	}
+
+	// True if a session exists (recording or paused). False if no run has been
+	// started or the last one was saved/discarded.
+	function hasSession() as Boolean {
+		return _session != null;
+	}
 
     // Used by the UI/input to know which controls to show.
     function isRecording() as Boolean {
