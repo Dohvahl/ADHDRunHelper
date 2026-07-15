@@ -4,9 +4,8 @@ Deferred visual/UX polish for the run app, to pick up after the core milestones.
 None of these are needed for the recorder to work — they make it *feel* native.
 
 Reference screenshots are native Garmin screens Ty photographed as targets.
-They currently live in `watch/resources/references/`, but that's inside the
-Connect IQ build path and should be moved out to a repo-root `references/` —
-update the paths below if/when it moves.
+They live in `references/` at the repo root (moved out of the Connect IQ build
+path). Filenames below are relative to that folder.
 
 ## Transitions
 - [ ] **Start / resume splash** — on start or unpause, briefly show a full-screen
