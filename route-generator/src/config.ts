@@ -10,6 +10,15 @@ export const EARLY_OUT_M = 100;
 /** ~110 m cache cells, so the same house rounds to a single key. */
 export const ROUND_DECIMALS = 3;
 
+/**
+ * Part of every cache key. Bump whenever the shape of `Route` changes: cached
+ * entries live in a file that outlives a deploy, and a stale row would otherwise
+ * deserialise into the new shape with fields silently missing. Bumping makes old
+ * entries stop matching, so they're regenerated instead. Superseded rows are left
+ * behind as dead weight, which is fine at this scale.
+ */
+export const CACHE_VERSION = 1;
+
 /** ORS's documented round_trip ceiling. */
 export const MAX_DISTANCE_M = 100_000;
 
