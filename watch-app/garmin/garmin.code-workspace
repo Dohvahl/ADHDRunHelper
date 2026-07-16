@@ -2,7 +2,14 @@
 	"folders": [
 		{
 			"path": "."
+		},
+		{
+			"path": "../.."
 		}
 	],
-	"settings": {}
+	"settings": {
+		"[typescript]": {
+			"editor.defaultFormatter": "esbenp.prettier-vscode"
+		}
+	}
 }

@@ -1,0 +1,16 @@
+# Top-most EditorConfig file. Stops the plugin from looking in parent folders.
+root = true
+
+# Global settings for all files
+[*]
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+charset = utf-8
+
+# Specific rules for TypeScript and TypeScript React files
+[*.{ts,tsx}]
+indent_style = space
+indent_size = 2
+quote_type = single
+max_line_length = 120

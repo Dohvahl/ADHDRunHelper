@@ -29,6 +29,11 @@ path). Filenames below are relative to that folder.
 ## Cleanup
 - [ ] Remove the debug `System.println` calls (`onKey` / `onSelect` / `onBack` /
       `saveRun` / `discardRun`) once the button and save flow are confirmed.
+- [ ] Rewrite the process-flavoured comments left over from building this
+      (`// Step 3 (yours)`, `// TODO (Step 2)`, `// Placeholder render. Replaced
+      by the real data screen in a later step`, and the `getInitialView` /
+      `onPosition` narration). Comments should state a constraint or a *why* for
+      a future reader — not narrate the order we built things in.
 
 ## Not a TODO — future-milestone reference
 - `DistanceInputScreen.jpg` — the circular 0–9 distance input, for the distance

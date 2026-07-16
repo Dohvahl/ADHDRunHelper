@@ -1,5 +1,6 @@
 {
 	"monkeyC.testDevices": [
 		"vivoactive4s"
-	]
+	],
+	"editor.defaultFormatter": "Garmin.monkey-c"
 }
