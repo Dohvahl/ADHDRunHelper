@@ -207,8 +207,8 @@ enhancement. Milestone 1 builds the recorder first, cues second.
    edge flash at a hardcoded trigger. Proves the (verify) items above and pins
    down the route-JSON contract. Uses the Connect IQ **simulator** — no physical
    watch needed until final validation.
-2. **Backend + crude generator.** Python endpoint returning a real
-   waypoint-generated route in the agreed JSON shape.
+2. **Backend + crude generator.** Node/TS endpoint that calls hosted ORS
+   `round_trip` (best-of-N) and returns a real route in the agreed JSON shape.
 3. **Web / PWA.** Map display + distance input against the same endpoint.
 4. **Integrate + caching.**
 5. **Iterate** toward the block-perimeter model and foot routing.
@@ -220,13 +220,17 @@ enhancement. Milestone 1 builds the recorder first, cues second.
 ### Decided
 - Architecture: PWA + minimal backend + Monkey C watch app (Option A).
 - Routing data: OpenStreetMap (not Google).
-- Backend language: Python.
+- **Routing engine: hosted OpenRouteService (`foot-walking` / `round_trip`) for
+  v1; graduate to self-hosted GraphHopper later for custom weighting toward the
+  block-perimeter model. Valhalla ruled out (no native round-trip).**
+- **Backend language: TypeScript / Node** — the frontend is JS, so one language
+  spans web + backend (a solo-dev win). A Python geo module can sit behind the
+  same HTTP contract later, only if the block-perimeter model ever needs it.
+- **Backend stack: Fastify + Zod (validation) + better-sqlite3 (cache) + Vitest.**
 - Watch: Connect IQ / Monkey C, developed in VS Code + Monkey C extension +
   Connect IQ SDK (has a simulator).
 
 ### Open (to decide as their milestone approaches)
-- Routing engine: OSRM vs Valhalla vs GraphHopper vs OSMnx-based. _(Milestone 2)_
-- Backend web framework: e.g. FastAPI vs Flask. _(Milestone 2)_
 - Web/PWA framework. _(Milestone 3)_
 - Backend hosting: leaning zero-idle-cost serverless, not a 24/7 server.
   _(Low risk, decide late.)_
@@ -249,11 +253,17 @@ enhancement. Milestone 1 builds the recorder first, cues second.
 | 2026-07-10 | Unit change = display only (no recalc); run type / distance change = recalc. |
 | 2026-07-10 | Watch app launches from the native activity list but re-implements all activity UI itself. |
 | 2026-07-15 | Milestone 1 base recorder works in sim. Verified: recording an activity needs the **Fit** permission (plus **Positioning** for GPS); HR populates from `Activity.Info` with NO Sensor permission. Physical action button routes through `onKey` (KEY_ENTER), not `onSelect`, on the 4S. |
+| 2026-07-15 | M2 routing = hosted OpenRouteService (`foot-walking`/`round_trip`), loop-only v1; self-hosted GraphHopper later. Valhalla ruled out (no round-trip). |
+| 2026-07-15 | Route gen = best-of-N (N=4, seeds 0–3), early-out ≤100 m from target, else smallest overshoot (fallback closest). Turns = left/right only; roundabout → net direction. |
+| 2026-07-15 | Contract (turns-only, no polyline): `GET /route?lat&lng&distance_m → {distance_m, turns:[{lat,lng,dir}]}`. Meters canonical; no auth in v1. Cache = SQLite keyed (round(lat,3), round(lng,3), distance_m). |
+| 2026-07-15 | Backend language changed **Python → TypeScript/Node** (frontend is JS; block model can be a decoupled Python module later). Stack: Fastify + Zod + better-sqlite3 + Vitest. |
+| 2026-07-16 | Repo uses "screaming architecture" folder names: `watch-app/garmin/` (renamed from `watch/`), `route-generator/` (the backend), future `companion-web-app/`. Global preference recorded in `~/.claude/CLAUDE.md`. |
 
 ---
 
 ## 12. Open questions
 
-- Exact route-JSON schema (settle in Milestone 1).
-- Is the Connect IQ dev environment set up? (VS Code present? SDK/extension?)
-- Do the (verify) watch capabilities in §7 all hold on the real 4S?
+- Do the §7 watch behaviors (verified in the **simulator**) all hold on the
+  **real VivoActive 4S**? Not yet run on physical hardware.
+- How accurate is ORS `round_trip` in practice? (best-of-N hedges, but unknown
+  until we see real routes.)

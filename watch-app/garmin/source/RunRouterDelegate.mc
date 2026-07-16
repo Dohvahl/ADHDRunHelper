@@ -91,7 +91,6 @@ class SaveConfirmationDelegate extends WatchUi.ConfirmationDelegate {
 		} else {
 			app.discardRun();
 		}
-		System.exit();
-        return true;
+		return System.exit();
     }
 }
