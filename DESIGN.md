@@ -264,6 +264,9 @@ enhancement. Milestone 1 builds the recorder first, cues second.
 ## 12. Open questions
 
 - Do the §7 watch behaviors (verified in the **simulator**) all hold on the
-  **real VivoActive 4S**? Not yet run on physical hardware.
+  **real VivoActive 4S**? **Not yet run on physical hardware** — nothing in
+  `watch-app/garmin/` has ever executed on the watch. See
+  `watch-app/garmin/HARDWARE-TESTING.md` for how to sideload and what to check.
+  Until then, treat every §7 (verify) item as simulator-only.
 - How accurate is ORS `round_trip` in practice? (best-of-N hedges, but unknown
   until we see real routes.)

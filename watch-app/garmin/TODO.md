@@ -1,4 +1,17 @@
-# Watch UI — polish backlog
+# Watch app — backlog
+
+## Validate on hardware — NOT polish, and not done
+
+- [ ] **Run this app on the actual VivoActive 4S.** Everything to date has only
+      run in the simulator. See [HARDWARE-TESTING.md](HARDWARE-TESTING.md) for how
+      to sideload and what to check. Until this is done, "Milestone 1 works" means
+      "works against synthetic GPS and a fake heart rate" — the FIT reaching
+      Garmin Connect, real GPS acquisition, and the wrist HR sensor are all
+      unproven, and `minApiLevel 3.3.0` may not even match the watch's firmware.
+
+---
+
+## Polish backlog
 
 Deferred visual/UX polish for the run app, to pick up after the core milestones.
 None of these are needed for the recorder to work — they make it *feel* native.
