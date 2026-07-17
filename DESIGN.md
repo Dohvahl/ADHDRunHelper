@@ -258,15 +258,16 @@ enhancement. Milestone 1 builds the recorder first, cues second.
 | 2026-07-15 | Contract (turns-only, no polyline): `GET /route?lat&lng&distance_m → {distance_m, turns:[{lat,lng,dir}]}`. Meters canonical; no auth in v1. Cache = SQLite keyed (round(lat,3), round(lng,3), distance_m). |
 | 2026-07-15 | Backend language changed **Python → TypeScript/Node** (frontend is JS; block model can be a decoupled Python module later). Stack: Fastify + Zod + better-sqlite3 + Vitest. |
 | 2026-07-16 | Repo uses "screaming architecture" folder names: `watch-app/garmin/` (renamed from `watch/`), `route-generator/` (the backend), future `companion-web-app/`. Global preference recorded in `~/.claude/CLAUDE.md`. |
+| 2026-07-16 | Milestone 1 **validated on the real VivoActive 4S**: installs & runs, real GPS distance/pace, wrist HR, FIT syncs to Garmin Connect, physical button, Back-guard → save/discard, GPS yellow→green. Left: battery, GPS under heavy cover. |
 
 ---
 
 ## 12. Open questions
 
-- Do the §7 watch behaviors (verified in the **simulator**) all hold on the
-  **real VivoActive 4S**? **Not yet run on physical hardware** — nothing in
-  `watch-app/garmin/` has ever executed on the watch. See
-  `watch-app/garmin/HARDWARE-TESTING.md` for how to sideload and what to check.
-  Until then, treat every §7 (verify) item as simulator-only.
+- §7 watch behaviors on the **real VivoActive 4S**: validated 2026-07-16 —
+  installs & runs, real GPS distance/pace, wrist HR, FIT → Garmin Connect,
+  physical button, Back-guard → save/discard, GPS yellow→green fix. Only two
+  secondary items left: battery drain, GPS accuracy under heavy cover. See
+  `watch-app/garmin/HARDWARE-TESTING.md`.
 - How accurate is ORS `round_trip` in practice? (best-of-N hedges, but unknown
   until we see real routes.)

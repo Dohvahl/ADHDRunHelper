@@ -2,12 +2,12 @@
 
 ## Validate on hardware — NOT polish, and not done
 
-- [ ] **Run this app on the actual VivoActive 4S.** Everything to date has only
-      run in the simulator. See [HARDWARE-TESTING.md](HARDWARE-TESTING.md) for how
-      to sideload and what to check. Until this is done, "Milestone 1 works" means
-      "works against synthetic GPS and a fake heart rate" — the FIT reaching
-      Garmin Connect, real GPS acquisition, and the wrist HR sensor are all
-      unproven, and `minApiLevel 3.3.0` may not even match the watch's firmware.
+- [x] **Run this app on the actual VivoActive 4S.** Done 2026-07-16 — installs &
+      runs, real GPS tracked distance/pace, wrist HR read, and the FIT synced to
+      Garmin Connect; physical `KEY_ENTER` start/stop, Back-guard → save/discard,
+      and GPS yellow→green fix all confirmed too. Only two secondary checks left
+      (non-blocking): battery drain over a long run, and GPS accuracy under heavy
+      tree/building cover. See [HARDWARE-TESTING.md](HARDWARE-TESTING.md).
 
 ---
 
