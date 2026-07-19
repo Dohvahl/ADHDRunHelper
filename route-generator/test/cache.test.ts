@@ -1,3 +1,6 @@
+import { rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 import { RouteCache, cacheKey } from '../src/cache.js';
 import { CACHE_VERSION } from '../src/config.js';
@@ -93,5 +96,25 @@ describe('RouteCache', () => {
     const empty: Route = { distance_m: 5000, turns: [] };
     cache.put('k', empty);
     expect(cache.get('k')).toEqual(empty);
+  });
+
+  // The whole reason for SQLite over an in-memory Map: a route written now must
+  // still be there after a restart. A fresh RouteCache on the same file stands in
+  // for "the process came back up". Every other test uses :memory:, which cannot
+  // prove this.
+  it('persists routes to a file so a fresh connection reads them back', () => {
+    const file = join(tmpdir(), `route-cache-${process.pid}-${Date.now()}.db`);
+    try {
+      const writer = new RouteCache(file);
+      const key = cacheKey(51.5, -0.12, 5000);
+      writer.put(key, ROUTE);
+      writer.close();
+
+      const reader = new RouteCache(file);
+      expect(reader.get(key)).toEqual(ROUTE);
+      reader.close();
+    } finally {
+      rmSync(file, { force: true });
+    }
   });
 });

@@ -69,6 +69,13 @@ describe('bearing', () => {
     expect(bearing([0, 0], [0.001, 0])).toBeCloseTo(90, 1);
     expect(bearing([0, 0], [0, 0.001])).toBeCloseTo(0, 1);
   });
+
+  it('reads ~180° going south and ~270° going west', () => {
+    // These exercise the negative-delta and wrap-to-360 paths that east/north don't,
+    // and bearing's sign is what drives netDirection.
+    expect(bearing([0, 0], [0, -0.001])).toBeCloseTo(180, 1);
+    expect(bearing([0, 0], [-0.001, 0])).toBeCloseTo(270, 1);
+  });
 });
 
 describe('turnAngle', () => {
@@ -80,6 +87,14 @@ describe('turnAngle', () => {
   it('normalises across the 0/360 wrap', () => {
     expect(turnAngle(350, 10)).toBe(20);
     expect(turnAngle(10, 350)).toBe(-20);
+  });
+
+  it('maps a 180° reversal to +180, never -180', () => {
+    // The (-180, 180] range is half-open, so a u-turn resolves to +180 (right),
+    // never -180. Whichever way it resolves, it must be consistent.
+    expect(turnAngle(0, 180)).toBe(180);
+    expect(turnAngle(180, 0)).toBe(180);
+    expect(turnAngle(90, 270)).toBe(180);
   });
 });
 
@@ -162,9 +177,55 @@ describe('extractTurns: roundabout direction comes from the geometry', () => {
   });
 });
 
+describe('extractTurns: whole routes', () => {
+  it('returns every turn in route order, dropping a non-turn in the middle', () => {
+    // A real route has many maneuvers; every other extractTurns test has exactly
+    // one. A bug that kept only the last turn, or reversed the order, passes those
+    // and fails this.
+    const line: Coord[] = [
+      [0, 0],
+      [0.001, 0],
+      [0.002, 0],
+      [0.003, 0],
+      [0.004, 0],
+    ];
+    const steps: OrsStep[] = [
+      { type: LEFT, way_points: [1, 2] },
+      { type: STRAIGHT, way_points: [2, 3] }, // dropped, must not shift the others
+      { type: RIGHT, way_points: [3, 4] },
+    ];
+    expect(extractTurns(candidate(line, steps))).toEqual([
+      { lat: 0, lng: 0.001, dir: 'left' },
+      { lat: 0, lng: 0.003, dir: 'right' },
+    ]);
+  });
+
+  it('skips a step with a negative maneuver index', () => {
+    expect(extractTurns(candidate(STRAIGHT_LINE, [{ type: LEFT, way_points: [-1, 2] }]))).toEqual([]);
+  });
+
+  it('emits no cue for a roundabout with no net turn', () => {
+    // Enter and leave on the same bearing: netDirection returns null, so nothing
+    // is cued even though it's a type-7.
+    expect(extractTurns(candidate(STRAIGHT_LINE, [{ type: ROUNDABOUT_ENTER, way_points: [1, 2] }]))).toEqual([]);
+  });
+});
+
 describe('netDirection', () => {
   it('returns null when there is no coordinate after the maneuver to judge with', () => {
     const step: OrsStep = { type: ROUNDABOUT_ENTER, way_points: [1, 4] };
     expect(netDirection(EAST_THEN_NORTH, step)).toBeNull();
+  });
+
+  it('returns null for a straight-through maneuver (equal in/out bearing, no net turn)', () => {
+    expect(netDirection(STRAIGHT_LINE, { type: ROUNDABOUT_ENTER, way_points: [1, 2] })).toBeNull();
+  });
+
+  it('returns null when the start index is before the first usable point', () => {
+    expect(netDirection(STRAIGHT_LINE, { type: ROUNDABOUT_ENTER, way_points: [0, 2] })).toBeNull();
+  });
+
+  it('returns null when the maneuver has no forward span (start >= end)', () => {
+    expect(netDirection(STRAIGHT_LINE, { type: ROUNDABOUT_ENTER, way_points: [2, 2] })).toBeNull();
   });
 });

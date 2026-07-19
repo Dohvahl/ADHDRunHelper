@@ -40,4 +40,19 @@ describe('select', () => {
   it('throws when there are no candidates', () => {
     expect(() => select([], 5000)).toThrow('no candidates');
   });
+
+  it('returns the first good-enough candidate when several qualify', () => {
+    const first = candidate(4950);
+    expect(select([first, candidate(5050)], 5000)).toBe(first);
+  });
+
+  it('keeps the first candidate when two overshoots tie', () => {
+    const first = candidate(5500);
+    expect(select([first, candidate(5500)], 5000)).toBe(first);
+  });
+
+  it('keeps the first candidate when two undershoots tie on closeness', () => {
+    const first = candidate(4000);
+    expect(select([first, candidate(4000)], 5000)).toBe(first);
+  });
 });
