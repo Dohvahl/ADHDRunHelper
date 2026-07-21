@@ -1,4 +1,11 @@
-import { Candidate, Waytype, WaytypeSummary } from './types.js';
+import {
+  Candidate,
+  EXCLUDED_WAYTYPES,
+  PENALISED_WAYTYPES,
+  PREFERRED_WAYTYPES,
+  Waytype,
+  WaytypeSummary,
+} from './types.js';
 
 /**
  * Determines whether a candidate is safe enough to be returned to the user. This is a
@@ -15,9 +22,7 @@ import { Candidate, Waytype, WaytypeSummary } from './types.js';
 export function isSafe(candidate: Candidate): boolean {
   if (candidate.waytypes.length == 0) return false;
 
-  return !candidate.waytypes.some((t) => {
-    return (t.value & Waytype.EXCLUDED) > 0;
-  });
+  return !candidate.waytypes.some((t) => EXCLUDED_WAYTYPES.has(t.value));
 }
 
 export function safetyScore(candidate: Candidate): number {
@@ -25,15 +30,15 @@ export function safetyScore(candidate: Candidate): number {
   if (totalDistance <= 0) return 0;
 
   const preferredDistance = candidate.waytypes
-    .map((t) => flaggedDistance(t, Waytype.PREFERRED))
+    .map((t) => flaggedDistance(t, PREFERRED_WAYTYPES))
     .reduce((accum, curr) => accum + curr, 0);
   const penalisedDistance = candidate.waytypes
-    .map((t) => flaggedDistance(t, Waytype.PENALISED))
+    .map((t) => flaggedDistance(t, PENALISED_WAYTYPES))
     .reduce((accum, curr) => accum + curr, 0);
 
   return +((preferredDistance - penalisedDistance) / totalDistance).toFixed(4); // TODO
 }
 
-function flaggedDistance(summary: WaytypeSummary, checkFlag: Waytype): number {
-  return (summary.value & checkFlag) > 0 ? summary.distance : 0;
+function flaggedDistance(summary: WaytypeSummary, checkFlag: ReadonlySet<Waytype>): number {
+  return checkFlag.has(summary.value) ? summary.distance : 0;
 }

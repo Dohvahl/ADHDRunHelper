@@ -24,24 +24,34 @@ export interface OrsStep {
 
 /** Waytypes - from ORS documentation */
 export enum Waytype {
-  STATE_ROAD = 1 << 1,
-  ROAD = 1 << 2,
-  STREET = 1 << 3,
-  PATH = 1 << 4,
-  TRACK = 1 << 5,
-  CYCLEWAY = 1 << 6,
-  FOOTWAY = 1 << 7,
-  STEPS = 1 << 8,
+  UNKNOWN = 0,
 
-  COUNT,
-
-  INVALID = -1,
-
-  EXCLUDED = STATE_ROAD, // ORS will never route on these
-  PREFERRED = STREET | PATH | CYCLEWAY | FOOTWAY, // the ideal waytypes for a running route
-  PENALISED = ROAD, // not ideal, but not forbidden
-  NEUTRAL = TRACK | STEPS,
+  STATE_ROAD,
+  ROAD,
+  STREET,
+  PATH,
+  TRACK,
+  CYCLEWAY,
+  FOOTWAY,
+  STEPS,
+  FERRY,
+  CONSTRUCTION,
 }
+
+export const EXCLUDED_WAYTYPES: ReadonlySet<Waytype> = new Set([Waytype.STATE_ROAD]);
+export const PREFERRED_WAYTYPES: ReadonlySet<Waytype> = new Set([
+  Waytype.STREET,
+  Waytype.PATH,
+  Waytype.CYCLEWAY,
+  Waytype.FOOTWAY,
+]);
+export const PENALISED_WAYTYPES: ReadonlySet<Waytype> = new Set([Waytype.ROAD]);
+export const NEUTRAL_WAYTYPES: ReadonlySet<Waytype> = new Set([
+  Waytype.TRACK,
+  Waytype.STEPS,
+  Waytype.FERRY,
+  Waytype.CONSTRUCTION,
+]);
 
 /**
  * One entry of ORS's waytype summary: how much of the route ran on this class of
