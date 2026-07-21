@@ -45,7 +45,9 @@ async function main(): Promise<void> {
 
   console.log(JSON.stringify({ distance_m: distanceM, turns }, null, 2));
   const delta = distanceM - targetM;
-  console.log(`\ntarget ${targetM}m -> actual ${distanceM}m (${delta >= 0 ? '+' : ''}${delta}m), ${turns.length} turns`);
+  console.log(
+    `\ntarget ${targetM}m -> actual ${distanceM}m (${delta >= 0 ? '+' : ''}${delta}m), ${turns.length} turns`,
+  );
 
   const geojson = {
     type: 'FeatureCollection',

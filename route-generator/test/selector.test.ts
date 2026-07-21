@@ -2,9 +2,13 @@ import { describe, expect, it } from 'vitest';
 import { isGoodEnough, select } from '../src/selector.js';
 import type { Candidate } from '../src/types.js';
 
-/** Only distanceM matters to the selector; geometry/steps are irrelevant here. */
+/**
+ * Only distanceM matters to most of these; geometry/steps are irrelevant. Waytypes
+ * are left empty so every candidate scores the same on safety — that keeps the
+ * distance rules under test here, and the safety tiebreak isolated to its own case.
+ */
 function candidate(distanceM: number): Candidate {
-  return { distanceM, geometry: [], steps: [] };
+  return { distanceM, geometry: [], steps: [], waytypes: [] };
 }
 
 describe('isGoodEnough', () => {

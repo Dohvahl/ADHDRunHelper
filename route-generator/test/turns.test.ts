@@ -20,7 +20,7 @@ const KEEP_LEFT = 12;
 const KEEP_RIGHT = 13;
 
 function candidate(geometry: Coord[], steps: OrsStep[]): Candidate {
-  return { distanceM: 1000, geometry, steps };
+  return { distanceM: 1000, geometry, steps, waytypes: [] };
 }
 
 /**

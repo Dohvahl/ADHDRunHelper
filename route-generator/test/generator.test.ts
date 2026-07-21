@@ -8,8 +8,14 @@ const GEOMETRY: Coord[] = [
   [0.002, 0],
 ];
 
+/** All-footway, so it passes the safety filter — these tests are about seed logic. */
 function candidate(distanceM: number): Candidate {
-  return { distanceM, geometry: GEOMETRY, steps: [{ type: 0, way_points: [1, 2] }] };
+  return {
+    distanceM,
+    geometry: GEOMETRY,
+    steps: [{ type: 0, way_points: [1, 2] }],
+    waytypes: [{ value: 7, distance: distanceM, amount: 100 }],
+  };
 }
 
 /** Serves a scripted distance per seed, so we can assert exactly which seeds ran. */

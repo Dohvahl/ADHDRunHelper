@@ -60,5 +60,6 @@ export async function fetchRoundTrip(
     distanceM: properties.summary.distance,
     geometry: geometry.coordinates,
     steps: properties.segments.flatMap((segment) => segment.steps),
+    waytypes: [],
   };
 }
