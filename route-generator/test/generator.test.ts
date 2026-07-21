@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { NoRouteError, generateRoute, type RoundTripFetcher } from '../src/generator.js';
+import { NoRouteError, generateRoute, pickBest, type RoundTripFetcher } from '../src/generator.js';
 import type { Candidate, Coord } from '../src/types.js';
 
 const GEOMETRY: Coord[] = [
@@ -76,5 +76,21 @@ describe('generateRoute', () => {
     });
     await expect(generateRoute(51.5, -0.12, 5000, fetcher)).rejects.toThrow('ORS is unreachable');
     expect(fetcher).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('pickBest', () => {
+  it('returns the chosen candidate with its geometry intact', async () => {
+    // generateRoute is built on this; the preview tool relies on the geometry the
+    // wire contract drops, so pin that pickBest hands the whole Candidate back.
+    const fetcher = fetcherFor([5000]);
+    const best = await pickBest(51.5, -0.12, 5000, fetcher);
+    expect(best.distanceM).toBe(5000);
+    expect(best.geometry).toEqual(GEOMETRY);
+  });
+
+  it('throws NoRouteError when every seed comes back empty', async () => {
+    const fetcher = fetcherFor([null, null, null, null]);
+    await expect(pickBest(51.5, -0.12, 5000, fetcher)).rejects.toThrow(NoRouteError);
   });
 });

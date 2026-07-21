@@ -36,7 +36,7 @@ export async function fetchRoundTrip(
       coordinates: [[lng, lat]], // ORS wants [lng, lat]
       options: { round_trip: { length: lengthM, points: ROUND_TRIP_POINTS, seed } },
     }),
-    signal: AbortSignal.timeout(30_000),
+    signal: AbortSignal.timeout(1_000),
   }).catch((error: unknown) => {
     throw new OrsError('ORS is unreachable', { cause: error });
   });

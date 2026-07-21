@@ -11,13 +11,17 @@ export class NoRouteError extends Error {
 
 export type RoundTripFetcher = (lat: number, lng: number, lengthM: number, seed: number) => Promise<Candidate | null>;
 
-/** Ask ORS for up to CANDIDATE_SEEDS.length loops and return the best one. */
-export async function generateRoute(
+/**
+ * Choose the best loop for this start + target from up to CANDIDATE_SEEDS.length
+ * ORS attempts. Returns the whole Candidate, geometry included — callers that need
+ * the actual path (the dev preview) get it; generateRoute discards it.
+ */
+export async function pickBest(
   lat: number,
   lng: number,
   targetM: number,
   fetcher: RoundTripFetcher = fetchRoundTrip,
-): Promise<Route> {
+): Promise<Candidate> {
   const candidates: Candidate[] = [];
   for (const seed of CANDIDATE_SEEDS) {
     const candidate = await fetcher(lat, lng, targetM, seed);
@@ -31,10 +35,19 @@ export async function generateRoute(
   if (candidates.length === 0) {
     throw new NoRouteError('ORS could not find a route for any seed');
   }
+  return select(candidates, targetM);
+}
 
-  const bestCandidate = select(candidates, targetM);
+/** The wire contract: the best loop shaped into { distance_m, turns } (no geometry). */
+export async function generateRoute(
+  lat: number,
+  lng: number,
+  targetM: number,
+  fetcher: RoundTripFetcher = fetchRoundTrip,
+): Promise<Route> {
+  const best = await pickBest(lat, lng, targetM, fetcher);
   return {
-    distance_m: Math.round(bestCandidate.distanceM),
-    turns: extractTurns(bestCandidate),
+    distance_m: Math.round(best.distanceM),
+    turns: extractTurns(best),
   };
 }
