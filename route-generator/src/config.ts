@@ -25,6 +25,14 @@ export const MAX_DISTANCE_M = 100_000;
 /** How many waypoints ORS uses to shape the loop. */
 export const ROUND_TRIP_POINTS = 3;
 
+/**
+ * ORS `quiet` weighting for foot profiles: 0 = normal routing, 1 = strongly prefer
+ * quiet ways even over a shorter route. Biasing away from busy roads up front means
+ * fewer candidates get thrown out by the safety filter afterwards.
+ * Tunable: maximum bias may cost us accuracy against the target distance.
+ */
+export const QUIET_FACTOR = 1.0;
+
 export function orsApiKey(): string {
   const key = process.env.ORS_API_KEY;
   if (!key) {

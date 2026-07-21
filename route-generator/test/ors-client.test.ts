@@ -23,6 +23,20 @@ const ORS_RESPONSE = {
             ],
           },
         ],
+        // What `extra_info: ["waytype"]` adds. `values` is the per-segment breakdown
+        // we don't need; `summary` is the per-waytype totals the safety rules use.
+        extras: {
+          waytype: {
+            values: [
+              [0, 1, 7],
+              [1, 2, 3],
+            ],
+            summary: [
+              { value: 7, distance: 3700.2, amount: 75.5 },
+              { value: 3, distance: 1200.5, amount: 24.5 },
+            ],
+          },
+        },
       },
     },
   ],
@@ -59,6 +73,27 @@ describe('fetchRoundTrip', () => {
     expect(body.options.round_trip).toEqual({ length: 5000, points: 3, seed: 2 });
   });
 
+  it('asks for the waytype extras the safety filter depends on', async () => {
+    const fetchMock = stubFetch(ORS_RESPONSE);
+    await fetchRoundTrip(51.5, -0.12, 5000, 0);
+
+    const body = JSON.parse(fetchMock.mock.calls[0][1].body);
+    // extra_info is a top-level field, a sibling of coordinates and options.
+    expect(body.extra_info).toEqual(['waytype']);
+  });
+
+  it('biases routing towards quiet ways', async () => {
+    const fetchMock = stubFetch(ORS_RESPONSE);
+    await fetchRoundTrip(51.5, -0.12, 5000, 0);
+
+    // Pin that we ask for quiet biasing, and the nesting ORS expects ({ factor: n }),
+    // but not the exact value — that's a tuning knob and moving it shouldn't fail here.
+    const body = JSON.parse(fetchMock.mock.calls[0][1].body);
+    const quiet = body.options.profile_params.weightings.quiet;
+    expect(quiet.factor).toBeGreaterThan(0);
+    expect(quiet.factor).toBeLessThanOrEqual(1);
+  });
+
   it('parses distance, geometry and flattened steps into a Candidate', async () => {
     stubFetch(ORS_RESPONSE);
     const candidate = await fetchRoundTrip(51.5, -0.12, 5000, 0);
@@ -71,6 +106,33 @@ describe('fetchRoundTrip', () => {
       { type: 11, way_points: [0, 1] },
       { type: 0, way_points: [1, 2] },
     ]);
+  });
+
+  it('parses the waytype summary into the candidate', async () => {
+    stubFetch(ORS_RESPONSE);
+    const candidate = await fetchRoundTrip(51.5, -0.12, 5000, 0);
+
+    // The summary totals, not the per-segment `values` array — distance per way class
+    // is all the safety rules need.
+    expect(candidate!.waytypes).toEqual([
+      { value: 7, distance: 3700.2, amount: 75.5 },
+      { value: 3, distance: 1200.5, amount: 24.5 },
+    ]);
+  });
+
+  it('yields empty waytypes when ORS returns no extras', async () => {
+    // Not a crash: an empty list is what makes isSafe fail closed downstream, so a
+    // route we cannot verify gets refused rather than trusted.
+    stubFetch({
+      features: [
+        {
+          geometry: { coordinates: [[-0.12, 51.5]] },
+          properties: { summary: { distance: 5000 }, segments: [] },
+        },
+      ],
+    });
+    const candidate = await fetchRoundTrip(51.5, -0.12, 5000, 0);
+    expect(candidate!.waytypes).toEqual([]);
   });
 
   it('flattens steps across multiple segments', async () => {

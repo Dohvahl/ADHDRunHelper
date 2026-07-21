@@ -1,5 +1,5 @@
 import { ORS_BASE_URL, ORS_PROFILE, ROUND_TRIP_POINTS, orsApiKey } from './config.js';
-import type { Candidate, Coord, OrsStep } from './types.js';
+import type { Candidate, Coord, OrsStep, WaytypeSummary } from './types.js';
 
 /** ORS said no (network, rate limit, bad request) — distinct from "no route exists". */
 export class OrsError extends Error {
@@ -12,6 +12,9 @@ interface OrsGeoJson {
     properties: {
       summary: { distance: number };
       segments: Array<{ steps: OrsStep[] }>;
+      extras?: {
+        waytype?: { summary: WaytypeSummary[] };
+      };
     };
   }>;
 }
@@ -34,7 +37,13 @@ export async function fetchRoundTrip(
     },
     body: JSON.stringify({
       coordinates: [[lng, lat]], // ORS wants [lng, lat]
-      options: { round_trip: { length: lengthM, points: ROUND_TRIP_POINTS, seed } },
+      options: {
+        round_trip: { length: lengthM, points: ROUND_TRIP_POINTS, seed },
+        profile_params: {
+          weightings: { quiet: { factor: 1.0 } },
+        },
+      },
+      extra_info: ['waytype'],
     }),
     signal: AbortSignal.timeout(1_000),
   }).catch((error: unknown) => {
@@ -51,6 +60,7 @@ export async function fetchRoundTrip(
   // than laundering it into an OrsError (a 502 that would blame ORS for our miss).
   const data = (await response.json()) as OrsGeoJson;
   const feature = data.features?.[0];
+  const waytypesResults = feature?.properties.extras?.waytype?.summary;
   if (!feature) {
     return null;
   }
@@ -60,6 +70,6 @@ export async function fetchRoundTrip(
     distanceM: properties.summary.distance,
     geometry: geometry.coordinates,
     steps: properties.segments.flatMap((segment) => segment.steps),
-    waytypes: [],
+    waytypes: waytypesResults || [],
   };
 }
