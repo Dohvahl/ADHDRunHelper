@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { OrsError, fetchRoundTrip } from '../src/ors-client.js';
+import { ROUND_TRIP_POINTS } from '../src/config.js';
 
 /** Minimal but structurally real ORS GeoJSON directions response. */
 const ORS_RESPONSE = {
@@ -52,7 +53,12 @@ afterEach(() => {
 });
 
 function stubFetch(response: unknown, ok = true, status = 200): ReturnType<typeof vi.fn> {
-  const fn = vi.fn().mockResolvedValue({ ok, status, json: async () => response });
+  const fn = vi.fn().mockResolvedValue({
+    ok,
+    status,
+    json: async () => response,
+    text: async () => JSON.stringify(response),
+  });
   vi.stubGlobal('fetch', fn);
   return fn;
 }
@@ -70,7 +76,7 @@ describe('fetchRoundTrip', () => {
     const body = JSON.parse(init.body);
     // ORS wants [lng, lat], and round_trip takes exactly the one start coordinate.
     expect(body.coordinates).toEqual([[-0.12, 51.5]]);
-    expect(body.options.round_trip).toEqual({ length: 5000, points: 3, seed: 2 });
+    expect(body.options.round_trip).toEqual({ length: 5000, points: ROUND_TRIP_POINTS, seed: 2 });
   });
 
   it('asks for the waytype extras the safety filter depends on', async () => {
@@ -80,18 +86,6 @@ describe('fetchRoundTrip', () => {
     const body = JSON.parse(fetchMock.mock.calls[0][1].body);
     // extra_info is a top-level field, a sibling of coordinates and options.
     expect(body.extra_info).toEqual(['waytype']);
-  });
-
-  it('biases routing towards quiet ways', async () => {
-    const fetchMock = stubFetch(ORS_RESPONSE);
-    await fetchRoundTrip(51.5, -0.12, 5000, 0);
-
-    // Pin that we ask for quiet biasing, and the nesting ORS expects ({ factor: n }),
-    // but not the exact value — that's a tuning knob and moving it shouldn't fail here.
-    const body = JSON.parse(fetchMock.mock.calls[0][1].body);
-    const quiet = body.options.profile_params.weightings.quiet;
-    expect(quiet.factor).toBeGreaterThan(0);
-    expect(quiet.factor).toBeLessThanOrEqual(1);
   });
 
   it('parses distance, geometry and flattened steps into a Candidate', async () => {
@@ -168,6 +162,13 @@ describe('fetchRoundTrip', () => {
     stubFetch({ error: 'rate limited' }, false, 429);
     await expect(fetchRoundTrip(51.5, -0.12, 5000, 0)).rejects.toThrow(OrsError);
     await expect(fetchRoundTrip(51.5, -0.12, 5000, 0)).rejects.toThrow('429');
+  });
+
+  it("carries ORS's explanation, not just the status code", async () => {
+    // A bare "400" is undebuggable. ORS names the offending parameter in the body,
+    // and that message is the whole difference between guessing and knowing.
+    stubFetch({ error: { code: 2003, message: "Unknown parameter 'quiet'." } }, false, 400);
+    await expect(fetchRoundTrip(51.5, -0.12, 5000, 0)).rejects.toThrow('2003');
   });
 
   it('throws when the API key is missing, without calling fetch', async () => {

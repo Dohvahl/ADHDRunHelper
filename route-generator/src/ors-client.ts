@@ -39,9 +39,7 @@ export async function fetchRoundTrip(
       coordinates: [[lng, lat]], // ORS wants [lng, lat]
       options: {
         round_trip: { length: lengthM, points: ROUND_TRIP_POINTS, seed },
-        profile_params: {
-          weightings: { quiet: { factor: 1.0 } },
-        },
+        profile_params: { weightings: { quiet: 1 } },
       },
       extra_info: ['waytype'],
     }),
@@ -52,7 +50,8 @@ export async function fetchRoundTrip(
 
   // A non-2xx response is still ORS answering — its problem, so also an OrsError.
   if (!response.ok) {
-    throw new OrsError(`ORS request failed with status ${response.status}`);
+    const msg = await response.text().catch(() => '');
+    throw new OrsError(`ORS request failed with status ${response.status}${msg ? `: ${msg}` : ''}`);
   }
 
   // Everything below is OUR parsing of ORS's payload. If ORS sends a shape we
